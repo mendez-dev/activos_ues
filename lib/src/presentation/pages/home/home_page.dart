@@ -2,6 +2,7 @@ import 'package:activos/src/blocs/auth/auth_bloc.dart';
 import 'package:activos/src/blocs/home/home_bloc.dart';
 import 'package:activos/src/helpers/helpers.dart';
 import 'package:activos/src/repositories/preferences/preferences_repository.dart';
+import 'package:activos/src/utils/const.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -31,9 +32,8 @@ class _HomePageState extends State<HomePage> {
         ),
         drawer: DrawerWidget(),
         body: WebView(
-          gestureNavigationEnabled: true,
           javascriptMode: JavascriptMode.unrestricted,
-          initialUrl: 'https://google.com',
+          initialUrl: 'http://activo.solucionesideales.com/app/viewSearch.php',
         ),
       ),
     );
@@ -94,6 +94,15 @@ class DrawerWidget extends StatelessWidget {
             ),
             Divider(),
             ListTile(
+              onTap: () => _updateUserName(context),
+              leading: Icon(
+                FontAwesomeIcons.userEdit,
+                color: Theme.of(context).primaryColor,
+              ),
+              title: Text("Editar perfil"),
+            ),
+            Divider(),
+            ListTile(
               onTap: () => Navigator.pushNamedAndRemoveUntil(
                   context, "develop", (route) => false),
               leading: Icon(
@@ -101,24 +110,6 @@ class DrawerWidget extends StatelessWidget {
                 color: Theme.of(context).primaryColor,
               ),
               title: Text("Desarrolladores"),
-            ),
-            Divider(),
-            ListTile(
-              onTap: () => _updateUserName(context),
-              leading: Icon(
-                FontAwesomeIcons.userEdit,
-                color: Theme.of(context).primaryColor,
-              ),
-              title: Text("Actualizar nombre de usuario"),
-            ),
-            Divider(),
-            ListTile(
-              onTap: () => _updatePassword(context),
-              leading: Icon(
-                FontAwesomeIcons.key,
-                color: Theme.of(context).primaryColor,
-              ),
-              title: Text("Actualizar contraseña"),
             ),
             Divider(),
             ListTile(
@@ -138,21 +129,44 @@ class DrawerWidget extends StatelessWidget {
   void _updateUserName(BuildContext context) async {
     TextEditingController userController = TextEditingController(
         text: BlocProvider.of<HomeBloc>(context).state.user);
+    TextEditingController passwordController = TextEditingController();
+    String password =
+        await RepositoryProvider.of<PreferencesRepository>(context)
+            .getString("password");
+    password = password != "" ? password : defaultPassword;
+
+    passwordController.text = password;
+
     GlobalKey<FormState> _form = GlobalKey<FormState>();
     Alert(
         context: context,
         title: "ACTUALIZAR NOMBRE DE USUARIO",
         content: Form(
           key: _form,
-          child: TextFormField(
-            controller: userController,
-            decoration: InputDecoration(labelText: "Nombre de usuario"),
-            validator: (String value) {
-              if (value.length < 3) {
-                return "Ingrese al menos 3 caracteres";
-              }
-              return null;
-            },
+          child: Column(
+            children: [
+              TextFormField(
+                controller: userController,
+                decoration: InputDecoration(labelText: "Nombre de usuario"),
+                validator: (String value) {
+                  if (value.length < 3) {
+                    return "Ingrese al menos 3 caracteres";
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                obscureText: true,
+                controller: passwordController,
+                decoration: InputDecoration(labelText: "Nueva contraseña"),
+                validator: (String value) {
+                  if (value.length < 6) {
+                    return "Ingrese al menos 6 caracteres";
+                  }
+                  return null;
+                },
+              )
+            ],
           ),
         ),
         buttons: [
@@ -164,8 +178,12 @@ class DrawerWidget extends StatelessWidget {
               ),
               onPressed: () async {
                 if (!_form.currentState.validate()) return;
+                // Actualizamos informacion
                 RepositoryProvider.of<PreferencesRepository>(context)
                     .save<String>("user", userController.text);
+                RepositoryProvider.of<PreferencesRepository>(context)
+                    .save<String>("password", passwordController.text);
+
                 BlocProvider.of<HomeBloc>(context).add(GetUserNameEvent());
                 Navigator.pop(context);
                 await Future.delayed(Duration(microseconds: 500));

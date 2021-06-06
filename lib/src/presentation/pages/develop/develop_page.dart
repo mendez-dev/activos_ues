@@ -17,7 +17,7 @@ class DevelopPage extends StatelessWidget {
         body: WebView(
           gestureNavigationEnabled: true,
           javascriptMode: JavascriptMode.unrestricted,
-          initialUrl: 'https://google.com',
+          initialUrl: 'http://activo.solucionesideales.com/app/viewDev.php',
         ),
       ),
     );
