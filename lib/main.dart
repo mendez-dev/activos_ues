@@ -10,12 +10,12 @@ import 'src/repositories/preferences/preferences_repository_impl.dart';
 import 'src/utils/logger.dart';
 
 void main() async {
-  // Variable para verificar si el usuario ya esta logeado por defecto [false]
-  bool logged = false;
-
   // Se llama este metodo cuando se necesita ejecutar codigo antes que
   // se muestre el primer widget, todo se ejecuta en el spalsh screen
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Variable para verificar si el usuario ya esta logeado por defecto [false]
+  bool logged = false;
 
   // Creamos una instancia del preferencesRepository el cual nos permite
   // acceder al local storage

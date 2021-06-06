@@ -1,3 +1,5 @@
+import 'package:activos/src/models/theme/theme_model.dart';
+
 abstract class PreferencesRepository {
   Future<void> save<Type>(String key, Type value);
 
@@ -12,4 +14,8 @@ abstract class PreferencesRepository {
   Future<bool> getBool(String key);
 
   Future<String> getString(String key);
+
+  Future<void> setTheme(ThemeModel theme);
+
+  Future<ThemeModel> getTheme();
 }

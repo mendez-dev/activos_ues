@@ -21,7 +21,6 @@ class LoginEvent implements AuthEvent {
   LoginEvent({
     @required this.user,
     @required this.password,
-    @required this.store,
   });
 
   /// Nombre de usuario
@@ -35,11 +34,6 @@ class LoginEvent implements AuthEvent {
   ///
   /// Clave de acceso al sistema se recomienda un minimo de 6 caracteres
   final String password;
-
-  /// Sucursal
-  ///
-  /// Id de la sucursal seleccionada en el login
-  final int store;
 
   @override
   List<Object> get props => [this.user, this.password];

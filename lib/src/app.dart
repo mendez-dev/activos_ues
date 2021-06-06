@@ -1,3 +1,8 @@
+import 'package:activos/src/blocs/auth/auth_bloc.dart';
+import 'package:activos/src/blocs/home/home_bloc.dart';
+import 'package:activos/src/presentation/pages/develop/develop_page.dart';
+import 'package:activos/src/presentation/pages/home/home_page.dart';
+import 'package:activos/src/presentation/pages/login/login_page.dart';
 import 'package:activos/src/repositories/auth/auth_repository.dart';
 import 'package:activos/src/repositories/preferences/preferences_repository.dart';
 import 'package:flutter/material.dart';
@@ -20,29 +25,37 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(primaryColor: Colors.red),
-      title: 'Material App',
-      home: MultiRepositoryProvider(
-          providers: [
-            RepositoryProvider<PreferencesRepository>.value(
-                value: preferencesRepository),
-            RepositoryProvider<AuthRepository>(
-                create: (BuildContext context) => AuthRepositoryImpl(
-                    RepositoryProvider.of<PreferencesRepository>(context)))
-          ],
-          child: MultiBlocProvider(
-              providers: [],
-              child: Scaffold(
-                appBar: AppBar(
-                  title: Text('Material App Bar'),
-                ),
-                body: Center(
-                  child: Container(
-                    child: Text('Hello World'),
-                  ),
-                ),
-              ))),
-    );
+    return MultiRepositoryProvider(
+        providers: [
+          RepositoryProvider<PreferencesRepository>.value(
+              value: preferencesRepository),
+          RepositoryProvider<AuthRepository>(
+              create: (BuildContext context) => AuthRepositoryImpl(
+                  RepositoryProvider.of<PreferencesRepository>(context))),
+        ],
+        child: MultiBlocProvider(
+            providers: [
+              BlocProvider<AuthBloc>(
+                  create: (BuildContext context) => AuthBloc(
+                      preferencesRepository:
+                          RepositoryProvider.of<PreferencesRepository>(context),
+                      authRepository:
+                          RepositoryProvider.of<AuthRepository>(context))),
+              BlocProvider<HomeBloc>(
+                  create: (BuildContext context) => HomeBloc(
+                      preferencesRepository:
+                          RepositoryProvider.of<PreferencesRepository>(
+                              context)))
+            ],
+            child: MaterialApp(
+              theme: ThemeData(primaryColor: Colors.red),
+              title: 'Material App',
+              home: logged ? HomePage() : LoginPage(),
+              routes: {
+                "login": (BuildContext context) => LoginPage(),
+                "home": (BuildContext context) => HomePage(),
+                "develop": (BuildContext context) => DevelopPage()
+              },
+            )));
   }
 }

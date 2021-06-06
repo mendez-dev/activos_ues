@@ -17,38 +17,23 @@ class AuthRepositoryImpl implements AuthRepository {
     String storeUser = await _preferencesRepository.getString("user");
     String storePassword = await _preferencesRepository.getString("password");
 
-    if (storeUser != "" && storePassword != "") {
-      // Verificamos si los datos coinciden con los almacenados en local storage
-      if (storeUser == user && storePassword == password) {
-        // Guardamos logged true
-        await _preferencesRepository.save<bool>("logged", true);
+    storeUser = storeUser != "" ? storeUser : defaultUser;
+    storePassword = storePassword != "" ? storePassword : defaultPassword;
 
-        return UserModel((b) => b
-          ..user = storeUser
-          ..password = storePassword
-          ..logged = true);
-      } else {
-        return UserModel((b) => b
-          ..user = ""
-          ..password = ""
-          ..logged = true);
-      }
+    // Verificamos si los datos coinciden con los almacenados en local storage
+    if (storeUser == user && storePassword == password) {
+      // Guardamos logged true
+      await _preferencesRepository.save<bool>("logged", true);
+
+      return UserModel((b) => b
+        ..user = storeUser
+        ..password = storePassword
+        ..logged = true);
     } else {
-      // Verificamos si los datos coinciden con los datos por defecto
-      if (defaultUser == user && defaultPassword == password) {
-        // Guardamos logged true
-        await _preferencesRepository.save<bool>("logged", true);
-
-        return UserModel((b) => b
-          ..user = defaultUser
-          ..password = defaultPassword
-          ..logged = true);
-      } else {
-        return UserModel((b) => b
-          ..user = ""
-          ..password = ""
-          ..logged = true);
-      }
+      return UserModel((b) => b
+        ..user = ""
+        ..password = ""
+        ..logged = false);
     }
   }
 
