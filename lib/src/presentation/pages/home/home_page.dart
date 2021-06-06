@@ -5,9 +5,9 @@ import 'package:activos/src/repositories/preferences/preferences_repository.dart
 import 'package:activos/src/utils/const.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,6 +15,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int tabIndex = 0;
+  PageController pageController = PageController();
+
   @override
   void initState() {
     BlocProvider.of<HomeBloc>(context).add(GetUserNameEvent());
@@ -26,107 +29,114 @@ class _HomePageState extends State<HomePage> {
     return WillPopScope(
       onWillPop: () => Helpers.of(context).onWillPop(),
       child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text("ACTIVOS UES"),
+        body: PageView(
+          controller: pageController,
+          children: [
+            WebviewScaffold(
+              appCacheEnabled: true,
+              primary: false,
+              url: "http://activo.solucionesideales.com/app/viewSearch.php",
+              appBar: new AppBar(
+                centerTitle: true,
+                title: new Text("ACTIVOS UES"),
+              ),
+            ),
+            ProfileWidget()
+          ],
         ),
-        drawer: DrawerWidget(),
-        body: WebView(
-          javascriptMode: JavascriptMode.unrestricted,
-          initialUrl: 'http://activo.solucionesideales.com/app/viewSearch.php',
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: tabIndex,
+          onTap: (int index) {
+            setState(() {
+              tabIndex = index;
+              pageController.jumpToPage(index);
+            });
+          },
+          items: [
+            BottomNavigationBarItem(icon: Icon(Icons.search), label: "Buscar"),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: "Usuario")
+          ],
         ),
       ),
     );
   }
 }
 
-class DrawerWidget extends StatelessWidget {
-  const DrawerWidget({
+class ProfileWidget extends StatelessWidget {
+  const ProfileWidget({
     Key key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      child: Container(
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text("PERFIL DE USUARIO"),
+      ),
+      body: Container(
+        padding: EdgeInsets.all(16),
         child: Column(
           children: [
-            DrawerHeader(
-                decoration:
-                    BoxDecoration(color: Theme.of(context).primaryColor),
+            Container(
+              width: double.infinity,
+              child: Card(
                 child: Container(
-                  width: double.infinity,
+                  padding: EdgeInsets.all(15),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       CircleAvatar(
-                        backgroundColor: Colors.white,
+                        backgroundColor: Theme.of(context).primaryColor,
                         radius: 35,
-                        child: Icon(
-                          FontAwesomeIcons.user,
-                          color: Theme.of(context).primaryColor,
-                          size: 30,
-                        ),
+                        child: Icon(FontAwesomeIcons.user,
+                            size: 30, color: Colors.white),
                       ),
-                      BlocBuilder<HomeBloc, HomeState>(
-                        builder: (context, state) {
-                          return Text(
-                            state.user.toUpperCase(),
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.normal),
-                          );
-                        },
-                      )
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Text(BlocProvider.of<HomeBloc>(context)
+                          .state
+                          .user
+                          .toUpperCase()),
+                      Divider(),
+                      ListTile(
+                        onTap: () => _updateUserInfo(context),
+                        leading: Icon(
+                          FontAwesomeIcons.userEdit,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        title: Text("Editar perfil"),
+                      ),
+                      Divider(),
+                      ListTile(
+                        onTap: () => Navigator.pushNamed(context, "develop"),
+                        leading: Icon(
+                          FontAwesomeIcons.code,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        title: Text("Desarrolladores"),
+                      ),
+                      Divider(),
+                      ListTile(
+                        onTap: () => _logout(context),
+                        leading: Icon(
+                          FontAwesomeIcons.signOutAlt,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        title: Text("Cerrar sesión"),
+                      ),
                     ],
                   ),
-                )),
-            ListTile(
-              onTap: () => Navigator.pushNamedAndRemoveUntil(
-                  context, "home", (route) => false),
-              leading: Icon(
-                FontAwesomeIcons.home,
-                color: Theme.of(context).primaryColor,
+                ),
               ),
-              title: Text("Inicio"),
-            ),
-            Divider(),
-            ListTile(
-              onTap: () => _updateUserName(context),
-              leading: Icon(
-                FontAwesomeIcons.userEdit,
-                color: Theme.of(context).primaryColor,
-              ),
-              title: Text("Editar perfil"),
-            ),
-            Divider(),
-            ListTile(
-              onTap: () => Navigator.pushNamedAndRemoveUntil(
-                  context, "develop", (route) => false),
-              leading: Icon(
-                FontAwesomeIcons.code,
-                color: Theme.of(context).primaryColor,
-              ),
-              title: Text("Desarrolladores"),
-            ),
-            Divider(),
-            ListTile(
-              onTap: () => _logout(context),
-              leading: Icon(
-                FontAwesomeIcons.signOutAlt,
-                color: Theme.of(context).primaryColor,
-              ),
-              title: Text("Cerrar sesión"),
-            ),
+            )
           ],
         ),
       ),
     );
   }
 
-  void _updateUserName(BuildContext context) async {
+  void _updateUserInfo(BuildContext context) async {
     TextEditingController userController = TextEditingController(
         text: BlocProvider.of<HomeBloc>(context).state.user);
     TextEditingController passwordController = TextEditingController();
@@ -188,46 +198,6 @@ class DrawerWidget extends StatelessWidget {
                 Navigator.pop(context);
                 await Future.delayed(Duration(microseconds: 500));
                 await _showSuccesDialog(context);
-                Navigator.pop(context);
-              })
-        ]).show();
-  }
-
-  void _updatePassword(BuildContext context) async {
-    TextEditingController passwordController = TextEditingController();
-    GlobalKey<FormState> _form = GlobalKey<FormState>();
-    Alert(
-        context: context,
-        title: "ACTUALIZAR CONTRASEÑA",
-        content: Form(
-          key: _form,
-          child: TextFormField(
-            controller: passwordController,
-            decoration: InputDecoration(labelText: "Nueva contraseña"),
-            validator: (String value) {
-              if (value.length < 6) {
-                return "Ingrese al menos 6 caracteres";
-              }
-              return null;
-            },
-          ),
-        ),
-        buttons: [
-          DialogButton(
-              color: Theme.of(context).primaryColor,
-              child: Text(
-                "ACTUALIZAR",
-                style: TextStyle(color: Colors.white),
-              ),
-              onPressed: () async {
-                if (!_form.currentState.validate()) return;
-                RepositoryProvider.of<PreferencesRepository>(context)
-                    .save<String>("password", passwordController.text);
-                BlocProvider.of<HomeBloc>(context).add(GetUserNameEvent());
-                Navigator.pop(context);
-                await Future.delayed(Duration(microseconds: 500));
-                await _showSuccesDialog(context);
-                Navigator.pop(context);
               })
         ]).show();
   }

@@ -1,24 +1,16 @@
-import 'package:activos/src/helpers/helpers.dart';
-import 'package:activos/src/presentation/pages/home/home_page.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 
 class DevelopPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () => Helpers.of(context).onWillPop(),
-      child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text("DESARROLLADORES"),
-        ),
-        drawer: DrawerWidget(),
-        body: WebView(
-          gestureNavigationEnabled: true,
-          javascriptMode: JavascriptMode.unrestricted,
-          initialUrl: 'http://activo.solucionesideales.com/app/viewDev.php',
-        ),
+    return WebviewScaffold(
+      appCacheEnabled: true,
+      primary: false,
+      url: "http://activo.solucionesideales.com/app/viewDev.php",
+      appBar: new AppBar(
+        centerTitle: true,
+        title: new Text("DESARROLLADORES"),
       ),
     );
   }

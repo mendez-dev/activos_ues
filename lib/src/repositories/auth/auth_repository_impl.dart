@@ -36,9 +36,4 @@ class AuthRepositoryImpl implements AuthRepository {
         ..logged = false);
     }
   }
-
-  @override
-  void logout() {
-    // TODO: implement logout
-  }
 }
